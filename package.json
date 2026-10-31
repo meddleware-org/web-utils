@@ -1,0 +1,64 @@
+{
+  "name": "@meddleware/web-utils",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Framework-free helpers shared by MeddleWare frontends: exact amount and date formatting, bounded fetching, stale-result guards, safe links and storage, status parsing.",
+  "author": "MeddleWare <dev@meddleware.co.uk>",
+  "license": "0BSD",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meddleware-org/web-utils.git"
+  },
+  "keywords": [
+    "format",
+    "bigint",
+    "timezone",
+    "fetch",
+    "sui"
+  ],
+  "files": [
+    "src",
+    "dist",
+    "CHANGELOG.md",
+    "SECURITY.md"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint:js": "eslint .",
+    "lint": "npm run lint:js"
+  },
+  "devDependencies": {
+    "@types/node": "~26.6.5",
+    "eslint": "^10.13.0",
+    "jiti": "^2.7.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "~5.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 ChromeAndroid versions",
+    "last 2 Edge versions",
+    "last 2 Firefox versions",
+    "last 2 FirefoxAndroid versions",
+    "last 2 Safari versions",
+    "last 2 iOS versions",
+    "last 2 Samsung versions",
+    "Firefox ESR",
+    "not dead"
+  ]
+}
