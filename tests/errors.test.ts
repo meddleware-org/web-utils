@@ -29,4 +29,13 @@ describe('errorMessage', () => {
     expect(errorMessage(42)).toBe('42')
     expect(errorMessage(null)).toBe('null')
   })
+
+  it('stops following a cause chain that loops back on itself (a wallet can throw anything)', () => {
+    const loop: Record<string, unknown> = { code: 1 }
+    loop.cause = loop
+    expect(() => errorMessage(loop)).not.toThrow()
+    const e = new Error()
+    ;(e as any).cause = e
+    expect(errorMessage(e)).toBe('Error')
+  })
 })

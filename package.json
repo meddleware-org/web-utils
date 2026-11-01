@@ -1,6 +1,6 @@
 {
   "name": "@meddleware/web-utils",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "Framework-free helpers shared by MeddleWare frontends: exact amount and date formatting, bounded fetching, stale-result guards, safe links and storage, status parsing.",
   "author": "MeddleWare <dev@meddleware.co.uk>",

@@ -3,6 +3,9 @@
 
 type Fetcher = typeof fetch
 
+/** The body size {@link fetchJson} accepts unless told otherwise: 1 MiB, hundreds of times what any JSON document it reads needs. */
+export const DEFAULT_MAX_JSON_BYTES = 1024 * 1024
+
 /** A non-2xx response. */
 export class HttpError extends Error {
   readonly status: number
@@ -20,16 +23,17 @@ export interface FetchJsonOptions {
   fetcher?: Fetcher
   /** Extra request options (headers are merged over `accept: application/json`). */
   init?: RequestInit
-  /** Refuse a body larger than this many bytes (default: no cap). */
+  /** Refuse a body larger than this many bytes (default {@link DEFAULT_MAX_JSON_BYTES}; `Infinity` lifts the cap). */
   maxBytes?: number
 }
 
 /**
- * GET a JSON document: `accept: application/json`, no credentials, no cache, a timeout covering headers and body. Rejects with an
- * {@link HttpError} for a non-2xx status, and a clear message for a timeout or invalid JSON.
+ * GET a JSON document: `accept: application/json`, no credentials, no cache, a timeout covering headers and body, and a size cap on the
+ * body ({@link DEFAULT_MAX_JSON_BYTES} by default). Rejects with an {@link HttpError} for a non-2xx status, and a clear message for a
+ * timeout, an oversized body or invalid JSON.
  */
 export async function fetchJson(url: string, options: FetchJsonOptions = {}): Promise<unknown> {
-  const { timeoutMs = 10_000, init, maxBytes } = options
+  const { timeoutMs = 10_000, init, maxBytes = DEFAULT_MAX_JSON_BYTES } = options
   const fetcher: Fetcher = options.fetcher ?? ((...args) => globalThis.fetch(...args))
   const res = await fetchWithTimeout(
     fetcher,
@@ -39,12 +43,7 @@ export async function fetchJson(url: string, options: FetchJsonOptions = {}): Pr
     url,
   )
   if (!res.ok) throw new HttpError(res.status)
-  if (maxBytes !== undefined) return readBoundedJson(res, maxBytes, url)
-  try {
-    return await res.json()
-  } catch (e) {
-    throw new Error(`${url} is not valid JSON.`, { cause: e })
-  }
+  return readBoundedJson(res, maxBytes, url)
 }
 
 /**

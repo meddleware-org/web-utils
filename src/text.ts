@@ -4,8 +4,8 @@ export const humanize = (snake: string): string => snake.replace(/_/g, ' ')
 const BYTE_UNITS = ['KiB', 'MiB', 'GiB', 'TiB'] as const
 
 /**
- * A byte count for people, in binary units: `512 B`, `12.3 KiB`, `4.0 MiB`. One decimal above a kibibyte; a negative, fractional or
- * non-finite count is shown as `—` rather than a made-up number.
+ * A byte count for people, in binary units: `512 B`, `12.3 KiB`, `4.0 MiB`. One decimal above a kibibyte, whole bytes below it; a
+ * negative or non-finite count is shown as `—` rather than a made-up number.
  */
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—'

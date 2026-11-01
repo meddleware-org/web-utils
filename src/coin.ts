@@ -5,14 +5,28 @@ export const COIN_DECIMALS = 9
 export const MIST_PER_SUI = 1_000_000_000n
 
 /**
+ * A finite number as the plain decimal it stands for: the shortest digits that round-trip (`String(n)`, what a person typed into a
+ * `type="number"` field), with an exponent form (`5e-7`, `1e+21`) written out. Never `toFixed`, which rounds digits away.
+ */
+function plainDecimal(n: number): string {
+  const m = /^(\d+)(?:\.(\d+))?e([+-]\d+)$/.exec(String(n))
+  if (!m) return String(n)
+  const digits = (m[1] ?? '') + (m[2] ?? '')
+  const point = (m[1] ?? '').length + Number(m[3])
+  if (point <= 0) return `0.${'0'.repeat(-point)}${digits}`
+  if (point >= digits.length) return digits + '0'.repeat(point - digits.length)
+  return `${digits.slice(0, point)}.${digits.slice(point)}`
+}
+
+/**
  * Convert a decimal SUI amount to MIST, exactly. Strings are parsed digit by digit; numbers (Vue's `v-model` casts
- * `type="number"` inputs) go through `toFixed(9)`, which also avoids exponent forms such as `5e-7`. Throws on anything that
- * is not a non-negative amount with at most 9 decimals.
+ * `type="number"` inputs) are written out as the decimal they stand for (exponent forms such as `5e-7` included) and then parsed the
+ * same way, so a number is never rounded. Throws on anything that is not a non-negative amount with at most 9 decimals.
  */
 export function suiToMist(sui: string | number): bigint {
   if (typeof sui === 'number') {
     if (!Number.isFinite(sui) || sui < 0) throw new Error('Invalid price.')
-    sui = sui.toFixed(COIN_DECIMALS)
+    sui = plainDecimal(sui)
   }
   if (/^\s*\d*\.\d{10,}\s*$/.test(sui)) throw new Error('Price has more than 9 decimal places (1 MIST = 0.000000001 SUI).')
   const mist = parseFixed(sui, COIN_DECIMALS)

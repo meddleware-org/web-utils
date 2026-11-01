@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { HttpError, fetchJson, fetchWithTimeout, readBoundedJson, readBoundedText } from '../src/fetch.js'
+import { DEFAULT_MAX_JSON_BYTES, HttpError, fetchJson, fetchWithTimeout, readBoundedJson, readBoundedText } from '../src/fetch.js'
 
 const json = (body: unknown, init?: ResponseInit) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' }, ...init })
 
@@ -51,6 +51,13 @@ describe('fetchJson', () => {
     } finally {
       globalThis.fetch = saved
     }
+  })
+
+  it('caps the body at 1 MiB by default, and lifts the cap only when asked', async () => {
+    const big = JSON.stringify({ pad: 'x'.repeat(DEFAULT_MAX_JSON_BYTES) })
+    const fetcher = async () => new Response(big)
+    await expect(fetchJson('/big', { fetcher })).rejects.toThrow(/larger than 1024 KiB/)
+    expect(await fetchJson('/big', { fetcher, maxBytes: Infinity })).toMatchObject({ pad: expect.any(String) })
   })
 
   it('can refuse a body above a cap', async () => {

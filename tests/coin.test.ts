@@ -13,6 +13,15 @@ describe('suiToMist / mistToSui', () => {
   it('accepts numbers from a type="number" v-model, including exponent-sized values', () => {
     expect(suiToMist(0.0000005)).toBe(500n) // String(0.0000005) === '5e-7'
     expect(suiToMist(2.5)).toBe(2_500_000_000n)
+    expect(suiToMist(1e-9)).toBe(1n)
+    expect(suiToMist(1e21)).toBe(1_000_000_000_000_000_000_000_000_000_000n)
+    expect(suiToMist(123.456)).toBe(123_456_000_000n)
+  })
+
+  it('rejects a number with more than 9 decimals instead of rounding it (5e-10 was 1 MIST through toFixed)', () => {
+    expect(() => suiToMist(5e-10)).toThrow(/more than 9 decimal places/)
+    expect(() => suiToMist(1.0000000006)).toThrow(/more than 9 decimal places/)
+    expect(() => suiToMist(0.1 + 0.2)).toThrow(/more than 9 decimal places/)
   })
 
   it('rejects invalid, negative and sub-MIST input', () => {
