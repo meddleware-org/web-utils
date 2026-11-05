@@ -99,13 +99,6 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 **Impact:** none exploitable: the origin is a constant, every dynamic part is a single encoded path segment or a union member, and the lint rule requires these helpers at the sink. Link text built from chain data is the consumer's to render as text.
 **Remediation / evidence:** adjudicated — runtime re-validation of a closed union adds nothing the encoding does not already give. Tests assert the encoding of hostile ids.
 
-### F8 — `formatUsd` threw on a value that is not a finite number
-**Severity:** Low   **Disposition:** RESOLVED
-**Where:** `src/usd.ts::formatUsd`.
-**Issue:** `formatUsd(micros)` went through `BigInt(Math.abs(Math.trunc(micros)))`, which throws `RangeError` for `NaN`, `undefined` or a non-number. Its consumers render server data: content-hub-ui's `describeChange` formats cap values from audit-trail JSON that it type-checks only by key presence, so one record with a missing or older-shaped field would throw inside a render and blank the Budgets view. The sibling formatters (`formatBytes`, `formatDateTime`) already show `—` for such input.
-**Impact:** a blank console section (not wrong money: nothing was shown) when the operator's own server returns an unexpected shape.
-**Remediation / evidence:** a value that is not a finite number is shown as `—`; test (`undefined`, `null`, `NaN`, `Infinity`, a numeric string). 0.0.2.
-
 ### F6 — Placeholder npm versions
 **Severity:** Info   **Disposition:** DEFERRED
 **Where:** npm registry — `0.0.0-rename.0`, `0.0.0-stage`.
@@ -116,6 +109,13 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 **Severity:** Positive
 **Where:** `tests/safe-href.test.ts` (13 cases), `tests/fixed.test.ts`, `tests/coin.test.ts`, `tests/async.test.ts`, `tests/operation-scope.test.ts`.
 **Evidence:** `safeHref` rejects credentials, C0 controls/space/DEL/backslash, `javascript:`, `data:`, `http:` off loopback, and returns the *normalised* `URL.href`, so what is rendered is what was checked; `safePath` rejects `//host`, `/\host`, `/<TAB>/host` and anything resolving off a stand-in origin; amounts stay exact beyond 2^53; `createGeneration`/`createOperationScope` have separate semantics (latest wins vs. invalidate-all) and each is tested. Ported helpers kept their original tests (and the cases that found bugs in them).
+
+### F8 — `formatUsd` threw on a value that is not a finite number
+**Severity:** Low   **Disposition:** RESOLVED
+**Where:** `src/usd.ts::formatUsd`.
+**Issue:** `formatUsd(micros)` went through `BigInt(Math.abs(Math.trunc(micros)))`, which throws `RangeError` for `NaN`, `undefined` or a non-number. Its consumers render server data: content-hub-ui's `describeChange` formats cap values from audit-trail JSON that it type-checks only by key presence, so one record with a missing or older-shaped field would throw inside a render and blank the Budgets view. The sibling formatters (`formatBytes`, `formatDateTime`) already show `—` for such input.
+**Impact:** a blank console section (not wrong money: nothing was shown) when the operator's own server returns an unexpected shape.
+**Remediation / evidence:** a value that is not a finite number is shown as `—`; test (`undefined`, `null`, `NaN`, `Infinity`, a numeric string). 0.0.2.
 
 ---
 
@@ -246,4 +246,4 @@ Everything is hermetic (injected `fetcher`, fake time zones through `Intl`). The
 
 ## Re-verification log
 
-- 2026-11-01 — first-pass baseline. Read every module and test; ran `npm ci`, `npm ls --all`, the audit gate (0), type-check, lint, `vitest` (93 → 97 tests), build and `npm pack --dry-run`; checked the registry (versions, provenance) and the live sizes of the three documents `fetchJson` reads; confirmed the consumer list from the consumers' manifests. Fixed F1–F4 in source (0.0.2, unreleased at the time of writing), added the actionlint step and dependabot parity. F6 handed to `OPERATOR_TASKS.md`.
+- 2026-11-01 — first-pass baseline. Read every module and test; ran `npm ci`, `npm ls --all`, the audit gate (0), type-check, lint, `vitest` (93 → 97 tests), build and `npm pack --dry-run`; checked the registry (versions, provenance) and the live sizes of the three documents `fetchJson` reads; confirmed the consumer list from the consumers' manifests. Fixed F1–F4 and F8 in source (0.0.2, unreleased at the time of writing), added the actionlint step and dependabot parity. F6 handed to `OPERATOR_TASKS.md`.
