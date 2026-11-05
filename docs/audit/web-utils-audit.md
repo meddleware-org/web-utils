@@ -101,8 +101,8 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 ### F6 — Placeholder npm versions
 **Severity:** Info   **Disposition:** DEFERRED
 **Where:** npm registry — `0.0.0-rename.0`, `0.0.0-stage`.
-**Issue:** created by the name reservation (`scripts/npm-rename.sh place`) before the trusted publisher existed. They are installable by exact version only (`latest` is 0.0.1) and contain no code.
-**Remediation / evidence:** deprecate both with a message pointing at 0.0.1 (`npm deprecate`) — a credentialed npm action, so it is the maintainer's: tracked in `OPERATOR_TASKS.md` (npm housekeeping). Not a mainnet gate.
+**Issue:** created by the name-reservation procedure (`scripts/npm-rename.sh place`, PUBLISHING.md: `0.0.0-rename.0` under the `placeholder` tag, plus `0.0.0-stage`) before the trusted publisher existed; eighteen packages carry the same pair. They are installable by exact version only (`latest` is the real release) and contain no code.
+**Remediation / evidence:** deprecate them with a message pointing at the latest release (`npm deprecate`) — a credentialed npm action, so it is the maintainer's: `OPERATOR_TASKS.md`, npm housekeeping item 3, with the exact command and the list of all eighteen packages. Cosmetic; not a mainnet gate.
 
 ### F7 — Positive: link allow-list, exact amounts and stale-result guards are tested in both directions
 **Severity:** Positive
