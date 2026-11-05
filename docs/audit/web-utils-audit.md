@@ -8,7 +8,7 @@
 **Review date:** 2026-11-01
 **Reviewer:** Internal review
 **Severity ceiling:** Medium — the package holds no keys, makes no request of its own, and decides nothing on-chain. The worst realistic defect is a wrong amount or a mis-validated link shown or submitted by a consumer, and every consumer's amount still passes the wallet prompt and the chain.
-**Status:** first-pass baseline 2026-11-01 (0.0.2 prepared) (the package was extracted from copies in ten repos on 2026-10-31; this is its first audit). 7 findings (2 Positive): 4 RESOLVED in source (released with 0.0.2), 1 ADJUDICATED, 1 DEFERRED (maintainer-only).
+**Status:** first-pass baseline 2026-11-01 (0.0.2 prepared) (the package was extracted from copies in ten repos on 2026-10-31; this is its first audit). 8 findings (2 Positive): 5 RESOLVED in source (released with 0.0.2), 1 ADJUDICATED, 1 DEFERRED (maintainer-only).
 
 ---
 
@@ -18,12 +18,13 @@
 
 Risk concentrates in two places: **amounts** (a rounding or parsing slip moves money in a consumer) and **URL validation** (a bypass becomes script or phishing in every app). Both held on review. All money arithmetic is on bigint digits; the link helpers reject credentials, control characters, backslashes, every scheme but `https:` (and `http:` on loopback) and protocol-relative paths, and are covered by two-direction tests that include the `/<TAB>/host` and `https://suivision.xyz@evil.com` cases.
 
-Four defects were found and fixed inline:
+Five defects were found and fixed inline:
 
 - **F1** — `suiToMist(number)` silently rounded a number with more than nine decimals (`5e-10` became 1 MIST) although its doc and the string path reject it: a form value could be accepted that the string form refuses.
 - **F2** — `fetchJson` read the whole body unless the caller passed `maxBytes`; no caller did. The default is now 1 MiB.
 - **F3** — `errorMessage` recursed through `cause` without a bound, so a wallet-thrown object whose cause is itself overflowed the stack inside an error handler.
 - **F4** — the `formatBytes` doc contradicted its tested behaviour.
+- **F8** — `formatUsd` threw on a value that is not a finite number (found reading content-hub-ui's audit-trail rendering).
 
 The package is pre-mainnet and its only open item is maintainer housekeeping: the two placeholder npm versions (F6). Nothing here is gated on mainnet.
 
@@ -60,7 +61,7 @@ In scope: `src/*.ts` (16 modules, 1 re-export index), `tests/*.ts` (15 files), `
 
 Out of scope: consumers' use of the helpers (each consumer's audit), the lint rule that enforces the URL helpers (eslint-config audit), the design tokens, anything rendered.
 
-Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`; `node .github/audit-gate.mjs` (0 high/critical); `npm run type-check`; `npm run lint`; `npx vitest run` (15 files, 96 tests after the fixes; 93 before); `npm run build`; `npm pack --dry-run --json`; `npm view @meddleware/web-utils versions dist.attestations.provenance`.
+Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`; `node .github/audit-gate.mjs` (0 high/critical); `npm run type-check`; `npm run lint`; `npx vitest run` (15 files, 97 tests after the fixes; 93 before); `npm run build`; `npm pack --dry-run --json`; `npm view @meddleware/web-utils versions dist.attestations.provenance`.
 
 ## Findings
 
@@ -97,6 +98,13 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 **Issue:** `kind` and (for Walruscan) `network` are interpolated into the path; only `id`/`blobId` are encoded. A consumer that passes a runtime string through a cast bypasses the union. For Sui, an unknown `network` falls back to testnet; for Walruscan the network is URL-encoded, so it can only ever be one path segment.
 **Impact:** none exploitable: the origin is a constant, every dynamic part is a single encoded path segment or a union member, and the lint rule requires these helpers at the sink. Link text built from chain data is the consumer's to render as text.
 **Remediation / evidence:** adjudicated — runtime re-validation of a closed union adds nothing the encoding does not already give. Tests assert the encoding of hostile ids.
+
+### F8 — `formatUsd` threw on a value that is not a finite number
+**Severity:** Low   **Disposition:** RESOLVED
+**Where:** `src/usd.ts::formatUsd`.
+**Issue:** `formatUsd(micros)` went through `BigInt(Math.abs(Math.trunc(micros)))`, which throws `RangeError` for `NaN`, `undefined` or a non-number. Its consumers render server data: content-hub-ui's `describeChange` formats cap values from audit-trail JSON that it type-checks only by key presence, so one record with a missing or older-shaped field would throw inside a render and blank the Budgets view. The sibling formatters (`formatBytes`, `formatDateTime`) already show `—` for such input.
+**Impact:** a blank console section (not wrong money: nothing was shown) when the operator's own server returns an unexpected shape.
+**Remediation / evidence:** a value that is not a finite number is shown as `—`; test (`undefined`, `null`, `NaN`, `Infinity`, a numeric string). 0.0.2.
 
 ### F6 — Placeholder npm versions
 **Severity:** Info   **Disposition:** DEFERRED
@@ -170,7 +178,7 @@ Lockfile committed; CI installs with `npm ci`; `audit-gate.mjs` runs in CI and (
 
 ## Section C — Test-coverage & hermetic/live split
 
-### C.1 Coverage grade — A (96 tests, 15 files, vitest, 2026-11-01)
+### C.1 Coverage grade — A (97 tests, 15 files, vitest, 2026-11-01)
 
 | Dimension | Assessment |
 | --- | --- |
@@ -238,4 +246,4 @@ Everything is hermetic (injected `fetcher`, fake time zones through `Intl`). The
 
 ## Re-verification log
 
-- 2026-11-01 — first-pass baseline. Read every module and test; ran `npm ci`, `npm ls --all`, the audit gate (0), type-check, lint, `vitest` (93 → 96 tests), build and `npm pack --dry-run`; checked the registry (versions, provenance) and the live sizes of the three documents `fetchJson` reads; confirmed the consumer list from the consumers' manifests. Fixed F1–F4 in source (0.0.2, unreleased at the time of writing), added the actionlint step and dependabot parity. F6 handed to `OPERATOR_TASKS.md`.
+- 2026-11-01 — first-pass baseline. Read every module and test; ran `npm ci`, `npm ls --all`, the audit gate (0), type-check, lint, `vitest` (93 → 97 tests), build and `npm pack --dry-run`; checked the registry (versions, provenance) and the live sizes of the three documents `fetchJson` reads; confirmed the consumer list from the consumers' manifests. Fixed F1–F4 in source (0.0.2, unreleased at the time of writing), added the actionlint step and dependabot parity. F6 handed to `OPERATOR_TASKS.md`.

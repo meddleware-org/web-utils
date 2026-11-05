@@ -2,8 +2,12 @@
 // point, so $0.015 is exactly 15 000.
 import { formatFixed } from './fixed.js'
 
-/** `15000` → `$0.015`; trailing zeros are dropped but at least two decimals are kept. */
+/**
+ * `15000` → `$0.015`; trailing zeros are dropped but at least two decimals are kept. A value that is not a finite number (a field a
+ * server left out, an older audit record) is shown as `—`, like the other display helpers, instead of throwing in the middle of a render.
+ */
 export function formatUsd(micros: number): string {
+  if (typeof micros !== 'number' || !Number.isFinite(micros)) return '—'
   const sign = micros < 0 ? '-' : ''
   return `${sign}$${formatFixed(BigInt(Math.abs(Math.trunc(micros))), 6, { minFraction: 2, group: 'en-GB' })}`
 }

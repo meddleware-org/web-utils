@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fetchJson` caps the body at 1 MiB unless told otherwise (`DEFAULT_MAX_JSON_BYTES`; `maxBytes: Infinity` lifts it).
 - `errorMessage` follows at most eight `cause` links, so a looping error object cannot overflow the stack.
 - The `formatBytes` documentation matches its behaviour.
+- `formatUsd` shows `—` for a value that is not a finite number (a field left out of a server's reply or an older audit record) instead of throwing `BigInt(NaN)` in the middle of a render.
 
 ## [0.0.1] - 2026-10-31
 

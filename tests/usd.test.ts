@@ -15,3 +15,10 @@ describe('money', () => {
     for (const n of [0, 1, 15_000, 999_999, 7_654_321]) expect(parseUsd(formatUsd(n).replace(/[$,]/g, ''))).toBe(n)
   })
 })
+
+describe('formatUsd with a value that is not a number', () => {
+  it('shows a dash instead of throwing', () => {
+    for (const bad of [undefined, null, Number.NaN, Number.POSITIVE_INFINITY, '15000'] as unknown[]) expect(formatUsd(bad as number)).toBe('—')
+  })
+})
+
