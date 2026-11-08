@@ -33,10 +33,13 @@ function coerceStatusLevel(s: unknown): StatusLevel {
   return isStatusLevel(s) ? s : 'unknown'
 }
 
-/** Strip HTML-sensitive characters from a name field (defense-in-depth). */
+/**
+ * Strip angle brackets from a name field (defense-in-depth: a name can never carry markup). An ampersand or a quote is legitimate in a name
+ * ("Identity & Access") and harmless: every renderer here shows a name as text.
+ */
 function sanitizeName(s: unknown): string {
   if (typeof s !== 'string' || s.trim() === '') return ''
-  return s.replace(/[<>&"]/g, '')
+  return s.replace(/[<>]/g, '')
 }
 
 function parseComponent(raw: unknown): StatusComponent | null {

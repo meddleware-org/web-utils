@@ -51,7 +51,7 @@ describe('parseSnapshot', () => {
     expect(snap!.groups[0]!.components[0]!.status).toBe('unknown')
   })
 
-  it('strips HTML-sensitive characters from group and component names', () => {
+  it('strips angle brackets from group and component names, and keeps ampersands and quotes', () => {
     const raw = {
       generated_at: '2026-09-01T00:00:00Z',
       overall: 'degraded',
@@ -65,7 +65,17 @@ describe('parseSnapshot', () => {
     }
     const snap = parseSnapshot(raw)
     expect(snap!.groups[0]!.name).toBe('bCore/b')
-    expect(snap!.groups[0]!.components[0]!.name).toBe('API amp; DB')
+    expect(snap!.groups[0]!.components[0]!.name).toBe('API &amp; DB')
+  })
+
+  it('keeps an ampersand and a quote in a name', () => {
+    const snap = parseSnapshot({
+      generated_at: '2026-09-01T00:00:00Z',
+      overall: 'operational',
+      groups: [{ name: 'Identity & Access', status: 'operational', components: [{ name: 'The "Sign-in" service', status: 'operational' }] }],
+    })
+    expect(snap!.groups[0]!.name).toBe('Identity & Access')
+    expect(snap!.groups[0]!.components[0]!.name).toBe('The "Sign-in" service')
   })
 
   it('drops components with empty or missing names', () => {
