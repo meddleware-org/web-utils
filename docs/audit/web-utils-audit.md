@@ -207,7 +207,7 @@ Everything is hermetic (injected `fetcher`, fake time zones through `Intl`). The
 - [ ] placeholder versions deprecated (F6) — maintainer
 
 ### pre-mainnet
-- [ ] external review
+- [ ] external review (ADR-0009 gate G4: not a launch gate; covered by redeploy and the audit pass)
 - [ ] at go-live every package is renumbered 0.2.0 (versioning policy)
 
 ## Cross-project themes
