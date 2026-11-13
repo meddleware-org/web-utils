@@ -1,6 +1,6 @@
 # @meddleware/web-utils
 
-Framework-free helpers shared by the MeddleWare frontends and client libraries. No Vue, no DOM at import time, no side effects,
+Framework-free helpers shared by the Meddleware frontends and client libraries. No Vue, no DOM at import time, no side effects,
 no runtime dependencies. One entry, tree-shakeable named exports.
 
 | Area | Exports |

@@ -1,4 +1,4 @@
-// @meddleware/web-utils — framework-free helpers shared by the MeddleWare frontends. No Vue, no DOM at import time, no side effects.
+// @meddleware/web-utils — framework-free helpers shared by the Meddleware frontends. No Vue, no DOM at import time, no side effects.
 
 export { parseFixed, formatFixed } from './fixed.js'
 export type { FormatFixedOptions } from './fixed.js'

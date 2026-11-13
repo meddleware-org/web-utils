@@ -1,4 +1,4 @@
-/** A chain a MeddleWare tool can run against. */
+/** A chain a Meddleware tool can run against. */
 export type ChainNetwork = 'testnet' | 'mainnet' | 'localnet'
 
 /** How far a network is deployed. `live`: every product has a deployment record there; `partial`: some do; `coming`: none does. */
