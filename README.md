@@ -56,3 +56,7 @@ by a timeout, throws `HttpError` (with `status`) for a non-2xx response, and nam
 `safeHref` returns a normalised `https:` URL (or `http:` on localhost) and `undefined` for anything else, including credentials,
 control characters and other schemes. Bind a link to an element only through `safeHref`, `safePath`, `suiExplorerUrl` or
 `walruscanBlobUrl`; `@meddleware/eslint-config` enforces it in templates.
+
+## Open standards
+
+What this project speaks, what is planned and where you can extend it: [docs/INTEROP.md](docs/INTEROP.md).
