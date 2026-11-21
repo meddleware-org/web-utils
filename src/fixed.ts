@@ -2,11 +2,15 @@
 // integer count of micro-units; neither may go through floating point, which loses precision above 2^53 and rounds ties
 // unpredictably. Everything here works on the decimal digits of a bigint.
 
+/** 10 to the power n, as a bigint (the size of one whole unit). */
 const pow10 = (n: number): bigint => 10n ** BigInt(n)
 
 /**
  * Parse a non-negative decimal (`"1.5"`, `".5"`, `"12"`) into base units, exactly. Returns `null` for anything else: empty,
  * negative, exponent forms, more than `decimals` fraction digits (silently rounding money is how it goes missing).
+ * @param text - the decimal as typed
+ * @param decimals - how many fraction digits the unit has (9 for SUI, 6 for micro-dollars)
+ * @returns the amount in base units, or `null` when the text is not an exact non-negative amount
  */
 export function parseFixed(text: string, decimals: number): bigint | null {
   const m = /^\s*(\d*)(?:\.(\d*))?\s*$/.exec(text)
@@ -18,6 +22,7 @@ export function parseFixed(text: string, decimals: number): bigint | null {
   return BigInt(whole || '0') * pow10(decimals) + BigInt(frac.padEnd(decimals, '0') || '0')
 }
 
+/** Options for {@link formatFixed}. */
 export interface FormatFixedOptions {
   /** Keep at least this many fraction digits (default 0: trailing zeros are dropped). */
   minFraction?: number
@@ -31,6 +36,10 @@ export interface FormatFixedOptions {
  * Write base units as a decimal string. Exact by default (`1_500_000_000n`, 9 → `1.5`); `maxFraction` rounds half away from
  * zero, and `minFraction` pads, so `formatFixed(5n, 3, { minFraction: 2 })` is `0.005` and `formatFixed(200_000n, 6, { minFraction: 2 })`
  * is `0.20`.
+ * @param value - the amount in base units (may be negative)
+ * @param decimals - how many fraction digits the unit has
+ * @param options - padding, rounding and grouping
+ * @returns the decimal string
  */
 export function formatFixed(value: bigint, decimals: number, options: FormatFixedOptions = {}): string {
   const negative = value < 0n
@@ -39,6 +48,7 @@ export function formatFixed(value: bigint, decimals: number, options: FormatFixe
   if (options.maxFraction !== undefined && options.maxFraction < decimals) {
     const drop = decimals - options.maxFraction
     const unit = pow10(drop)
+    // Adding half a unit before the integer division rounds half away from zero (abs is already non-negative), on the exact digits.
     abs = (abs + unit / 2n) / unit
     places = options.maxFraction
   }
@@ -48,5 +58,6 @@ export function formatFixed(value: bigint, decimals: number, options: FormatFixe
   const min = options.minFraction ?? 0
   if (frac.length < min) frac = frac.padEnd(min, '0')
   const wholeText = options.group ? whole.toLocaleString(options.group) : whole.toString()
+  // No minus sign for a value that rounded to nothing: "-0" would be wrong.
   return `${negative && (whole !== 0n || frac !== '') ? '-' : ''}${wholeText}${frac ? `.${frac}` : ''}`
 }

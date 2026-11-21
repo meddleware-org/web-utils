@@ -3,24 +3,33 @@ export type StatusLevel = 'operational' | 'degraded' | 'down' | 'unknown'
 
 /** A single monitored component within a group. */
 export interface StatusComponent {
+  /** The component's display name (angle brackets removed). */
   name: string
+  /** Its health. */
   status: StatusLevel
 }
 
 /** A logical capability group containing one or more components. */
 export interface StatusGroup {
+  /** The group's display name (angle brackets removed). */
   name: string
+  /** The group's own health. */
   status: StatusLevel
+  /** The components in the group; may be empty. */
   components: StatusComponent[]
 }
 
 /** The full snapshot returned by `GET /api/status`. */
 export interface StatusSnapshot {
+  /** When the probe made the snapshot (an ISO 8601 string, kept as sent). */
   generated_at: string
+  /** The worst state across the groups. */
   overall: StatusLevel
+  /** The capability groups. */
   groups: StatusGroup[]
 }
 
+/** The four values a status may have, for the guard below. */
 const STATUS_LEVELS = new Set<string>(['operational', 'degraded', 'down', 'unknown'])
 
 /** Type guard for `StatusLevel`. Validates that a raw value is one of the known status strings. */
@@ -42,6 +51,11 @@ function sanitizeName(s: unknown): string {
   return s.replace(/[<>]/g, '')
 }
 
+/**
+ * One component from untrusted JSON.
+ * @param raw - the value found in the response
+ * @returns the component, or `null` when it is not an object or has no usable name
+ */
 function parseComponent(raw: unknown): StatusComponent | null {
   if (raw === null || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
@@ -50,6 +64,11 @@ function parseComponent(raw: unknown): StatusComponent | null {
   return { name, status: coerceStatusLevel(r.status) }
 }
 
+/**
+ * One group from untrusted JSON, with its components.
+ * @param raw - the value found in the response
+ * @returns the group, or `null` when it is not an object or has no usable name
+ */
 function parseGroup(raw: unknown): StatusGroup | null {
   if (raw === null || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
@@ -67,6 +86,8 @@ function parseGroup(raw: unknown): StatusGroup | null {
  * Per-group and per-component fields are sanitized: unknown status values are coerced to
  * `'unknown'`; name fields are stripped of HTML-sensitive characters. Groups or components
  * with empty/missing names are dropped.
+ * @param raw - the parsed JSON of the response (untrusted)
+ * @returns the validated snapshot, or `null`
  */
 export function parseSnapshot(raw: unknown): StatusSnapshot | null {
   if (raw === null || typeof raw !== 'object') return null

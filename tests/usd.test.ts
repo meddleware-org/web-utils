@@ -1,3 +1,7 @@
+/**
+ * Tests for the micro-dollar helpers (`src/usd.ts`): formatting and parsing without floating point, and a dash for a value that is not a
+ * number (a field a server left out) instead of an exception in the middle of a render.
+ */
 import { describe, expect, it } from 'vitest'
 import { formatUsd, parseUsd } from '../src/usd.js'
 
@@ -16,6 +20,7 @@ describe('money', () => {
   })
 })
 
+// Older audit records and partial responses reach the display with a missing amount; the helper shows a dash, like the other formatters.
 describe('formatUsd with a value that is not a number', () => {
   it('shows a dash instead of throwing', () => {
     for (const bad of [undefined, null, Number.NaN, Number.POSITIVE_INFINITY, '15000'] as unknown[]) expect(formatUsd(bad as number)).toBe('—')

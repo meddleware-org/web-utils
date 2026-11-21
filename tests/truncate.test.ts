@@ -1,3 +1,7 @@
+/**
+ * Tests for `truncateMiddle` (`src/truncate.ts`): the default keeps the start and end of a 32-byte id, a value that fits is returned whole,
+ * a zero count drops that side, and odd counts (negative, fractional, NaN) are clamped.
+ */
 import { describe, it, expect } from 'vitest'
 import { truncateMiddle, DEFAULT_TRUNCATE_CHARS } from '../src/truncate.js'
 

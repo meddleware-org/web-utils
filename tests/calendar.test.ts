@@ -1,8 +1,13 @@
+/**
+ * Tests for the month grid and the month and weekday names (`src/calendar.ts`): Monday-first weeks, seven days per row, the month carrying
+ * into the year, and names that come from Intl (so another locale gives another language).
+ */
 import { describe, expect, it } from 'vitest'
 import { MONTHS, WEEKDAYS, monthGrid, monthNames, shiftMonth, weekdayNames } from '../src/calendar.js'
 
 describe('calendar', () => {
   it('lays out a month in Monday-first weeks', () => {
+    // October 2026 starts on a Thursday, so the first row begins with the last three days of September.
     const weeks = monthGrid(2026, 10) // 1 Oct 2026 is a Thursday
     expect(weeks[0]!.map((c) => c.date)).toEqual([28, 29, 30, 1, 2, 3, 4])
     expect(weeks[0]![3]!.day).toBe('2026-10-01')

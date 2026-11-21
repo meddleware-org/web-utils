@@ -1,6 +1,12 @@
+/**
+ * Tests for the bounded network reads (`src/fetch.ts`): `fetchJson` asks anonymously and strictly, times out, caps the body size, and
+ * names the request in every failure; `readBoundedText` refuses a body by its declared length and by its actual size. The fetch is always a
+ * stand-in, so no test touches the network.
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_MAX_JSON_BYTES, HttpError, fetchJson, fetchWithTimeout, readBoundedJson, readBoundedText } from '../src/fetch.js'
 
+/** A JSON response for a stand-in fetch. */
 const json = (body: unknown, init?: ResponseInit) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' }, ...init })
 
 describe('fetchJson', () => {
@@ -22,6 +28,7 @@ describe('fetchJson', () => {
     expect(init.headers).toEqual({ accept: 'application/json', 'x-a': '1' })
   })
 
+  // The status is on the error so a caller can tell a 404 (nothing there) from a 503 (try again).
   it('rejects a non-2xx response with the status', async () => {
     const fetcher = (async () => new Response('down', { status: 503 })) as typeof fetch
     const e = await fetchJson('/x', { fetcher }).catch((err: unknown) => err)
@@ -30,16 +37,19 @@ describe('fetchJson', () => {
     expect((e as HttpError).message).toBe('HTTP 503')
   })
 
+  // An HTML error page served with a 200 is the usual cause; the message must name the request, not just say "Unexpected token <".
   it('names the URL when the body is not JSON', async () => {
     const fetcher = (async () => new Response('<html>', { status: 200 })) as typeof fetch
     await expect(fetchJson('/x', { fetcher })).rejects.toThrow('/x is not valid JSON.')
   })
 
   it('times out with a message naming the request', async () => {
+    // A fetch that never answers and rejects with the signal's own reason when the deadline passes, as a real fetch does.
     const fetcher = ((_u: string, init: RequestInit) =>
       new Promise((_r, reject) => {
         init.signal!.addEventListener('abort', () => reject(init.signal!.reason))
       })) as unknown as typeof fetch
+    // 20 ms rounds to "0s" in the message: the unit is whole seconds because real timeouts are seconds.
     await expect(fetchJson('/slow', { fetcher, timeoutMs: 20 })).rejects.toThrow('/slow timed out after 0s.')
   })
 
@@ -68,6 +78,7 @@ describe('fetchJson', () => {
 })
 
 describe('fetchWithTimeout', () => {
+  // Only a timeout is reworded; a DNS or connection failure keeps its own error so the caller sees the real cause.
   it('passes other failures through untouched', async () => {
     const boom = new Error('network down')
     await expect(fetchWithTimeout((async () => Promise.reject(boom)) as typeof fetch, '/x', {}, 1000, 'thing')).rejects.toBe(boom)
@@ -81,6 +92,7 @@ describe('bounded reads', () => {
   })
 
   it('cancels a body that grows past the cap', async () => {
+    // No content-length and an endless body: only counting the bytes as they arrive can stop it.
     const stream = new ReadableStream<Uint8Array>({
       pull(c) {
         c.enqueue(new Uint8Array(600))

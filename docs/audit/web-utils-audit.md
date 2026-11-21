@@ -4,11 +4,25 @@
 **Project:** repos/web-utils (`@meddleware/web-utils`) — framework-free helpers shared by every frontend and client library: exact bigint amounts, dates and time zones, bounded fetch, stale-result guards, safe link and storage helpers, status parsing.
 **Project type:** TS library (ships `src/` and generated `.d.ts`; no runtime dependencies)
 **Template:** AUDIT_TEMPLATE.md (2026-11-01) + AUDIT_TEMPLATE_TS.md (2026-11-01). Not triggered: `AUDIT_TEMPLATE_SUI_CLIENT.md` — the package builds explorer links and formats amounts, but never builds or signs a PTB, reads Move objects or events, or verifies a Sui signature (the chain is only ever *named* in a URL); `AUDIT_TEMPLATE_VUE.md` and `AUDIT_TEMPLATE_A11Y.md` — no Vue, no rendering (the helpers return strings; the consumer renders them); `AUDIT_TEMPLATE_IMG.md` — no image.
-**Deployment status:** *(Current, 2026-11-05: `0.0.2` is released to npm with provenance (CI green, trusted publishing); consumers take it through their own 2026-11-05 releases. The text below is the earlier history, kept as written.)* npm `@meddleware/web-utils` 0.0.1 (released 2026-10-31, tag `v0.0.1`, publish run green, provenance attestation present on the registry — `slsa.dev/provenance/v1` — checked 2026-11-01). The registry also lists two placeholder versions, `0.0.0-rename.0` and `0.0.0-stage`, from the name reservation (F6). Unreleased on `main`: the fixes of this audit (F1–F4), which ship as 0.0.2. Consumers (all `^0.0.1`, an exact pin on 0.0.x): ui, wallet-adapter, walrus-storage-kit, access-gate-ui, dashboard-ui, landing-site, roadmap-site, content-hub-ui, treasury-ui, status-ui, token-issuance-ui, sealed-storage-ui, walrus-storage-ui.
-**Review date:** 2026-11-01
+Added 2026-11-21 (Part B documentation pass): `AUDIT_TEMPLATE_DOCS.md` (2026-11-20); `AUDIT_TEMPLATE_RFC.md` (2026-11-19), partial: dates and time zones, URLs, JSON, HTTP fetch behaviour and the status snapshot; `AUDIT_TEMPLATE_IOP.md` (2026-11-19), partial: public API and versioning; `AUDIT_TEMPLATE_PRIV.md` (2026-11-20), partial: what the helpers store, request or log on a consumer's behalf (browser storage access, one outbound fetch helper).
+**Deployment status:** *(Current, 2026-11-21: npm **`0.0.4` is `latest`** (SLSA v1 provenance; tag `v0.0.4` → `c004e03`); the commits since the tag change documentation, CI and audit text, and two comments under `src/` (the "Meddleware" spelling); no code. Fifteen consumers, all `^0.0.4`: `dev-site` (a development dependency) and, as dependencies, access-gate-ui, content-hub-ui, dashboard-ui, landing-site, link-in-bio-ui, roadmap-site, sealed-storage-ui, status-ui, token-issuance-ui, treasury-ui, ui, wallet-adapter, walrus-storage-kit, walrus-storage-ui. Dependabot group #2 (two updates) is open with CI green. The two paragraphs below are history.)* *(Earlier, 2026-11-05: `0.0.2` is released to npm with provenance (CI green, trusted publishing); consumers take it through their own 2026-11-05 releases. The text below is the earlier history, kept as written.)* npm `@meddleware/web-utils` 0.0.1 (released 2026-10-31, tag `v0.0.1`, publish run green, provenance attestation present on the registry — `slsa.dev/provenance/v1` — checked 2026-11-01). The registry also lists two placeholder versions, `0.0.0-rename.0` and `0.0.0-stage`, from the name reservation (F6). Unreleased on `main`: the fixes of this audit (F1–F4), which ship as 0.0.2. Consumers (all `^0.0.1`, an exact pin on 0.0.x): ui, wallet-adapter, walrus-storage-kit, access-gate-ui, dashboard-ui, landing-site, roadmap-site, content-hub-ui, treasury-ui, status-ui, token-issuance-ui, sealed-storage-ui, walrus-storage-ui.
+**Review date:** 2026-11-01; Part B documentation pass 2026-11-21 (DOCS, RFC, IOP and PRIV lenses first applied)
 **Reviewer:** Internal review
 **Severity ceiling:** Medium — the package holds no keys, makes no request of its own, and decides nothing on-chain. The worst realistic defect is a wrong amount or a mis-validated link shown or submitted by a consumer, and every consumer's amount still passes the wallet prompt and the chain.
 **Status:** first-pass baseline 2026-11-01 (0.0.2 released 2026-11-05) (the package was extracted from copies in ten repos on 2026-10-31; this is its first audit). 8 findings (2 Positive): 5 RESOLVED in source (released with 0.0.2), 1 ADJUDICATED, 1 DEFERRED (maintainer-only).
+Documentation pass 2026-11-21 (0.0.4 current): F9 found and resolved (unreleased). Recount: 9 findings (1 Positive: F7; the "2 Positive" above was a miscount): 6 RESOLVED, 1 ADJUDICATED (F5), 1 DEFERRED (F6).
+
+**Front matter (DOCS, RFC, IOP and PRIV lenses, added 2026-11-21):**
+
+| Field | Value |
+| --- | --- |
+| Documentation status | ledger (workspace `docs/audit/DOCS_LEDGER.tsv`): 55 tracked files, 52 done (48 measured against the thresholds), 3 excluded (the lockfile, `LICENSE`, the generated `docs/INTEROP.md`), 0 pending, 0 fu (2026-11-21 pass) |
+| Required documents | README, CHANGELOG, SECURITY, CONTRIBUTING (added 2026-11-21), LICENSE (0BSD), CLAUDE.md, AGENTS.md (added 2026-11-21): all present |
+| Doc lints | `check-docs.mjs` (workspace) is the gate. The shared `eslint-plugin-jsdoc` fragment the standard plans is switched on here after the Phase 5 release of `@meddleware/frontend-config`; this package's own `eslint.config.ts` does not use that package (it is a leaf) and would take the fragment from its own copy |
+| Standards spoken | ECMA-402 `Intl` (date and time-zone formatting) and the IANA time-zone database via `Intl` — consumes; ISO 8601 and RFC 3339 instants (`fromLocalInput` returns `toISOString()`) — implements the subset it needs; WHATWG URL (`safeHref`, `safePath`) — consumes; WHATWG Fetch, `AbortSignal.timeout` and Streams (`fetchJson`, `readBoundedText`) — consumes; JSON (RFC 8259) — consumes; Wallet Standard icon data URIs — consumes (`safeIcon`); ECMAScript modules (ECMA-262), SPDX `0BSD`, Sigstore / SLSA — as the other packages |
+| Deviations | none |
+| Drafts relied on | none |
+| Data a person can take away | none: the package holds no data about anyone |
 
 ---
 
@@ -57,11 +71,11 @@ Critical / High / Medium / Low / Info / Positive — unchanged across the corpus
 
 ## Scope
 
-In scope: `src/*.ts` (16 modules, 1 re-export index), `tests/*.ts` (15 files), `package.json` (`files`, `exports`, scripts), `.github/` (workflows, `audit-gate.mjs`, `audit-allowlist.json`, `dependabot.yml`), `SECURITY.md`, `CLAUDE.md`, the published tarball (`npm pack --dry-run`), the registry record (versions, provenance).
+In scope: `src/*.ts` (17 modules since `network-status.ts` was added, 1 re-export index), `tests/*.ts` (16 files; 15 on 2026-11-01), `package.json` (`files`, `exports`, scripts), `.github/` (workflows, `audit-gate.mjs`, `audit-allowlist.json`, `dependabot.yml`), `SECURITY.md`, `CLAUDE.md`, the published tarball (`npm pack --dry-run`), the registry record (versions, provenance).
 
 Out of scope: consumers' use of the helpers (each consumer's audit), the lint rule that enforces the URL helpers (eslint-config audit), the design tokens, anything rendered.
 
-Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`; `node .github/audit-gate.mjs` (0 high/critical); `npm run type-check`; `npm run lint`; `npx vitest run` (15 files, 97 tests after the fixes; 93 before); `npm run build`; `npm pack --dry-run --json`; `npm view @meddleware/web-utils versions dist.attestations.provenance`.
+Environment and commands (2026-11-21, Node 24.13 locally, Node 26 in CI): `npm ci`; `npm run type-check`; `npm run lint`; `npm test` (16 files, 102 tests); `npm run build`; `npm pack --dry-run --json` (41 files, nothing stray); `node .github/audit-gate.mjs` (0 high/critical, empty allow-list); actionlint 1.7.7 (the CI image, through podman). Earlier (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`; `node .github/audit-gate.mjs` (0 high/critical); `npm run type-check`; `npm run lint`; `npx vitest run` (15 files, 97 tests after the fixes; 93 before); `npm run build`; `npm pack --dry-run --json`; `npm view @meddleware/web-utils versions dist.attestations.provenance`.
 
 ## Findings
 
@@ -117,6 +131,21 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 **Impact:** a blank console section (not wrong money: nothing was shown) when the operator's own server returns an unexpected shape.
 **Remediation / evidence:** a value that is not a finite number is shown as `—`; test (`undefined`, `null`, `NaN`, `Infinity`, a numeric string). 0.0.2.
 
+### Part B documentation pass (2026-11-21)
+
+Scope: every tracked file read against the workspace's `docs/operations/DOCUMENTATION_STANDARD.md` and annotated (Part B Phase 1, the fourth repository); the DOCS, RFC, IOP and PRIV lenses applied for the first time.
+Before and after editing: `npm ci`, the audit gate, type-check, lint, the 16 test files (102 tests), build, the package-contents check and actionlint passed. The diff is comment-only apart from three tests that now import
+the function they test at the top of the file instead of with a dynamic `import()` inside the test (`tests/explorer.test.ts`, `tests/safe-href.test.ts`, `tests/status.test.ts`): the TypeScript compiles to identical output with
+comments removed everywhere else, the YAML parses to identical values, and `.gitignore` has the same patterns. `.github/audit-gate.mjs` is replaced by the annotated canonical text and is now byte-identical to design-tokens' copy
+(FU-0196: one of the two leaf copies).
+
+### F9 — Documentation drift found by the documentation pass
+**Severity:** Low   **Disposition:** RESOLVED (2026-11-21, unreleased)
+**Where:** `README.md`, `CLAUDE.md`, this audit, `.github/audit-gate.mjs`.
+**Issue:** (1) the README's export table omitted `networkAvailability` and its three types, `DEFAULT_MAX_JSON_BYTES`, `DEFAULT_TRUNCATE_CHARS` and the option and shape types (seventeen of the seventy-one names exported from `src/index.ts` appeared nowhere in the README); it also had no Development section; (2) CLAUDE.md had no Commands or Related section; (3) this audit gave 0.0.2 as current, 15 test files and 16 modules, and a consumer list that predates `link-in-bio-ui`; (4) the audit-gate copy was an un-annotated duplicate of the shared text.
+**Impact:** none on the code. A consumer reading the README could not find `networkAvailability`, which the dashboard, the landing page and the docs use; a reviewer would have been misled about what is deployed and who consumes it.
+**Remediation / evidence:** the README lists every export (checked by a script that reads `src/index.ts` and finds each name in the README) and has a Development section; CLAUDE.md has Commands and Related sections; the facts above are checked against npm and the consumers' manifests; the gate is the canonical annotated text.
+
 ---
 
 ## Section A — Invariant verification matrix
@@ -142,7 +171,7 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 | Dependency | Pinned version | Liveness dependency? | CVE / audit status | Notes |
 | --- | --- | --- | --- | --- |
 | runtime dependencies | none | — | — | the package ships its own source |
-| dev: `typescript` ~6.0.3, `vitest` ~5.0.5, `eslint` ^10.13, `typescript-eslint` ^8.72, `jiti`, `@types/node` | lockfile | none at runtime | `audit-gate.mjs`: 0 high/critical (2026-11-01) | dev-only |
+| dev: `typescript` ~6.0.3, `vitest` ~5.0.5, `eslint` ^10.13, `typescript-eslint` ^8.72, `jiti`, `@types/node` | lockfile | none at runtime | `audit-gate.mjs`: 0 high/critical (2026-11-01 and 2026-11-21) | dev-only |
 | platform APIs: `URL`, `Intl.DateTimeFormat`, `AbortSignal.timeout`, `TextDecoder`, `fetch` | the consumer's browser/Node | `fetchJson` fails closed (throws) if absent | within the browserslist promise (D101) | `AbortSignal.timeout` needs Safari 16+ / Chrome 103+, inside the promise |
 
 ### B.2 Publish authority & CI
@@ -166,7 +195,7 @@ Environment and commands (2026-11-01, Node 26, npm 12): `npm ci`; `npm ls --all`
 
 ### B.TS-1 Packaging
 
-`files`: `src`, `dist`, `CHANGELOG.md`, `SECURITY.md`. `npm pack --dry-run`: 39 files, 17 KiB — `src/*.ts`, `dist/*.d.ts`, `package.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `SECURITY.md`; no tests, no `.github`, no config. CI asserts the whitelist (`unexpected files in the tarball`). `exports` `.` → types `dist/index.d.ts`, default `src/index.ts` (ships source, like the client libraries; consumers compile it, which their `tsc` settings must accept — proven by the consumers' CI). `sideEffects: false` is accurate (no import-time effect).
+`files`: `src`, `dist`, `CHANGELOG.md`, `SECURITY.md`. `npm pack --dry-run`: 41 files on 2026-11-21 (39 files, 17 KiB on 2026-11-01) — `src/*.ts`, `dist/*.d.ts`, `package.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `SECURITY.md`; no tests, no `.github`, no config. CI asserts the whitelist (`unexpected files in the tarball`). `exports` `.` → types `dist/index.d.ts`, default `src/index.ts` (ships source, like the client libraries; consumers compile it, which their `tsc` settings must accept — proven by the consumers' CI). `sideEffects: false` is accurate (no import-time effect).
 
 ### B.TS-2 Install-time code
 
@@ -176,9 +205,58 @@ No lifecycle script other than `prepublishOnly: npm run build`. No `overrides`, 
 
 Lockfile committed; CI installs with `npm ci`; `audit-gate.mjs` runs in CI and (through `verify`) in the publish workflow with an empty allowlist; no `--omit=dev`. First-party shared-tooling rule: N/A (this is a runtime library, not tooling).
 
+### B.DOCS-1 Ledger state
+
+55 tracked files: 52 done (48 measured against the thresholds), 3 excluded (lockfile, licence text, generated `docs/INTEROP.md`), 0 pending, 0 `fu:` rows (2026-11-21, commit recorded in the ledger).
+
+### B.DOCS-2 Commands run
+
+Every command in the README's Development section, CLAUDE.md's Commands section and CONTRIBUTING.md was run on 2026-11-21 and gave what the documents say: `npm ci`, `npm run type-check`, `npm run lint`,
+`npm test` (102 tests), `npm run build`, `node .github/audit-gate.mjs` (0 advisories), `npm pack --dry-run` (41 files).
+
+### B.DOCS-3 Generated documentation
+
+`docs/INTEROP.md` is generated by the workspace's `scripts/interop/gen-interop.py` from `config/interop.yaml` and checked there. `dist/*.d.ts` is generated from the source (`npm run build`) and is not tracked.
+
+### B.RFC-1 Standards inventory
+
+| Interface | Standard (and version) | Role | Where | Conformance evidence | Deviation |
+| --- | --- | --- | --- | --- | --- |
+| Dates and time zones | ECMA-402 `Intl.DateTimeFormat`; IANA time-zone names | consumes | `src/time.ts`, `src/calendar.ts` | `tests/time.test.ts` (clock changes in London, New York, Kolkata, Sydney), `tests/calendar.test.ts` | the zone's offset is derived from `formatToParts`, not from a time-zone library (the standard exposes no offset API) |
+| Instants | ISO 8601 / RFC 3339 (`2026-07-01T08:30:00.000Z`) | implements the form `Date.toISOString` writes | `src/time.ts` | round-trip tests | — |
+| Links | WHATWG URL | consumes the parser, then allow-lists | `src/safe-href.ts` | `tests/safe-href.test.ts` (credentials, controls, backslashes, schemes) | refuses `http:` outside loopback and any credentials, which the URL standard allows |
+| Fetch | WHATWG Fetch, `AbortSignal.timeout`, Streams | consumes | `src/fetch.ts` | `tests/fetch.test.ts` (stand-in fetch, timeout, oversize, streamed oversize) | sends `credentials: 'omit'` and `cache: 'no-cache'` always |
+| JSON | RFC 8259 | consumes | `src/fetch.ts`, `src/status.ts` | invalid JSON rejected by name | — |
+| Wallet icons | Wallet Standard (`data:image/...;base64,` icon) | consumes | `src/safe-href.ts` (`safeIcon`) | `tests/safe-href.test.ts` | refuses other image types and unencoded data URIs |
+| Binary units | IEC 80000-13 (KiB, MiB, GiB, TiB) | implements the names | `src/text.ts` | `tests/text.test.ts` | — |
+| Module | ECMAScript modules (ECMA-262) | implements | `src/index.ts` | the consumers' builds import it | — |
+| Provenance | Sigstore / SLSA (npm provenance) | consumes | `npm-publish.yml` | `dist.attestations` on npm, SLSA v1 (checked 2026-11-21) | — |
+
+### B.IOP-1 Export and exit drill
+
+Not applicable: the package holds no data about anyone. A consumer leaves by copying a helper out of `src/` (0BSD, each module stands alone apart from `coin.ts` and `usd.ts` importing `fixed.ts`).
+
+### B.IOP-2 Exit register entries
+
+npm (publication) and GitHub Actions (CI). No run-time dependency: the helpers use platform APIs the browser or Node provides.
+
+### B.IOP-3 API stability
+
+The public API is the seventy-one names exported from `src/index.ts`, listed in the README. Versioning is patch-only until mainnet (workspace policy), so a consumer's `^0.0.x` is an exact pin and nothing changes under it. The URL helper
+names (`safeHref`, `safePath`, `safeIcon`, `suiExplorerUrl`, `walruscanBlobUrl`) are also trusted by name in `@meddleware/eslint-config`; renaming one is a coordinated change (WU-M6). A change to what a helper accepts or
+returns is announced in `CHANGELOG.md`.
+
+### B.PRIV-1 / B.PRIV-2 / B.PRIV-3 Privacy inventories
+
+Personal data: none held. Client-side: `safeStorage` only returns the browser's storage object (it writes nothing); `triggerDownload` creates a short-lived object URL for a file the person asked for; `fetchJson` sends
+an anonymous request (`credentials: 'omit'`, no cookie, no referrer override) to the URL the caller passes, so which hosts are contacted is the consumer's row in `PRIVACY_BY_DEFAULT.md`, not this package's. Logs: none. Recorded
+2026-11-21.
+
+---
+
 ## Section C — Test-coverage & hermetic/live split
 
-### C.1 Coverage grade — A (97 tests, 15 files, vitest, 2026-11-01)
+### C.1 Coverage grade — A (102 tests, 16 files, vitest, 2026-11-21; 97 tests in 15 files on 2026-11-01)
 
 | Dimension | Assessment |
 | --- | --- |
@@ -227,6 +305,22 @@ Everything is hermetic (injected `fetcher`, fake time zones through `Intl`). The
 - **WU-M4** MUST keep zero runtime dependencies and no import-time effect (I10).
 - **WU-M5** MUST publish only through the tag-gated trusted-publisher workflow, with provenance (B.2).
 - **WU-M6** MUST keep the helper names the lint rule accepts in step with `@meddleware/eslint-config`.
+- **WU-M7** MUST list every export in the README (F9).
+
+**Lens baselines (DOCS, RFC, IOP, PRIV), first recorded 2026-11-21:**
+
+| ID | Holds? | Evidence |
+| --- | --- | --- |
+| DOCS-M1 | yes (all seven documents; 0BSD; CHANGELOG per release with an Unreleased section) | B.DOCS-1 |
+| DOCS-M2 | yes (every file's header and every declaration documented; ledger rows done) | `check-docs.mjs --report web-utils` |
+| DOCS-M3 | yes (every export in the README; no environment variables) | README, `src/*.ts` |
+| DOCS-M4 | yes (commands run, links resolve, ids exist) | B.DOCS-2 |
+| DOCS-M5 | yes (no TODO, FIXME, XXX or HACK) | `check-docs.mjs` |
+| DOCS-M6 | yes (CLAUDE.md verified against the code and the consumers, F9; AGENTS.md points to it) | this pass |
+| DOCS-M7 | yes (no secrets or private data; the source ships with its comments, which say nothing private) | inspection |
+| RFC-M1 to RFC-M7 | yes where they apply (B.RFC-1); M5 is the hosts', not a package's | B.RFC-1 |
+| IOP-M3, IOP-M5 | yes (B.IOP-3; no data, no ads, no tracking); IOP-M1, M2, M4, M6, M7: not applicable (no data, no service) | B.IOP-1 to 3 |
+| PRIV-M1 to PRIV-M8 | not applicable to the package itself (nothing stored, requested or logged by it); the one outbound call is the caller's | B.PRIV |
 
 ## Implementation suggestions (SHOULD / MAY)
 
@@ -247,3 +341,15 @@ Everything is hermetic (injected `fetcher`, fake time zones through `Intl`). The
 ## Re-verification log
 
 - 2026-11-01 — first-pass baseline. Read every module and test; ran `npm ci`, `npm ls --all`, the audit gate (0), type-check, lint, `vitest` (93 → 97 tests), build and `npm pack --dry-run`; checked the registry (versions, provenance) and the live sizes of the three documents `fetchJson` reads; confirmed the consumer list from the consumers' manifests. Fixed F1–F4 and F8 in source (0.0.2, unreleased at the time of writing), added the actionlint step and dependabot parity. F6 handed to `OPERATOR_TASKS.md`.
+- 2026-11-21 — Part B documentation pass and first application of the DOCS, RFC, IOP and PRIV lenses (above, "Part B documentation pass"). Baseline before editing: `npm ci`, the audit gate, type-check, lint, 102 tests in 16 files,
+  build, package contents, actionlint. Every tracked file annotated to the documentation standard (headers, TSDoc on every declaration, comments on why); `CONTRIBUTING.md` and `AGENTS.md` added; README Development section and a
+  complete export table; CLAUDE.md Commands and Related sections. Found and fixed **F9** (documentation drift: seventeen exports missing from the README, stale audit facts, an un-annotated copy of the gate). Verified live: npm
+  `0.0.4` latest with SLSA v1 provenance; fifteen consumers all on `^0.0.4`; Dependabot group #2 open, CI green. Re-run after editing: the same commands, all passing; the diff proven comment-only apart from three tests'
+  imports (compiled output, parsed YAML, `.gitignore` patterns). Recorded outside the repository: FU-0196 (this package's gate is now identical to design-tokens'). Counts: 8 dispositioned findings + 1 Positive (F7): 6 RESOLVED
+  (F1 to F4, F8, F9), 1 ADJUDICATED (F5), 1 DEFERRED (F6).
+
+## Pre-save consistency checklist (this pass)
+
+- [x] 2026-11-21: Template line cites DOCS, RFC, IOP and PRIV with their registry dates; their front-matter fields, Section B subsections and MUST rows added; F9 recorded in the findings and the log; the deployment status,
+  consumers, packaging counts and test counts current.
+

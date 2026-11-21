@@ -1,3 +1,7 @@
+/**
+ * Tests for `errorMessage` (`src/errors.ts`): readable text from whatever a wallet or a library threw (an Error, a string, a plain object,
+ * a nested cause), and no hang on a cause chain that loops back on itself.
+ */
 import { describe, it, expect } from 'vitest'
 import { errorMessage } from '../src/errors.js'
 
@@ -30,6 +34,7 @@ describe('errorMessage', () => {
     expect(errorMessage(null)).toBe('null')
   })
 
+  // A wallet extension can throw any value, including an object whose `cause` is itself; the helper must not recurse forever.
   it('stops following a cause chain that loops back on itself (a wallet can throw anything)', () => {
     const loop: Record<string, unknown> = { code: 1 }
     loop.cause = loop

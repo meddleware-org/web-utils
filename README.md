@@ -15,6 +15,8 @@ no runtime dependencies. One entry, tree-shakeable named exports.
 | Browser | `safeStorage`, `safeFileName`, `triggerDownload` |
 | Links | `safeHref`, `safePath`, `safeIcon`, `suiExplorerUrl`, `walruscanBlobUrl`, `truncateMiddle` |
 | Status | `parseSnapshot`, `isStatusLevel`, `STATUS_LABEL`, `STATUS_HEADLINE` and the `Status*` types |
+| Networks | `networkAvailability` (which networks the deployment records say are live, partial or coming) and the `ChainNetwork`, `NetworkStatus`, `NetworkAvailability` types |
+| Limits and types | `DEFAULT_MAX_JSON_BYTES` (1 MiB, the `fetchJson` cap), `DEFAULT_TRUNCATE_CHARS` (`[12, 10]`), and the option and shape types the functions above take (`FetchJsonOptions`, `FormatFixedOptions`, `FormatOptions`, `Cell`, `OperationToken`, `SuiNetwork`, `SuiExplorerKind`, `WalrusExplorerNetwork`) |
 
 ## Why exact
 
@@ -56,6 +58,23 @@ by a timeout, throws `HttpError` (with `status`) for a non-2xx response, and nam
 `safeHref` returns a normalised `https:` URL (or `http:` on localhost) and `undefined` for anything else, including credentials,
 control characters and other schemes. Bind a link to an element only through `safeHref`, `safePath`, `suiExplorerUrl` or
 `walruscanBlobUrl`; `@meddleware/eslint-config` enforces it in templates.
+
+## Development
+
+The package ships its TypeScript source plus the declarations built from it. The checks, all run in CI on every push:
+
+```bash
+npm ci               # install exactly the lockfile
+npm run type-check   # tsc --noEmit over src/ and tests/
+npm run lint         # eslint (typescript-eslint recommended)
+npm test             # 102 tests, plain Node (no jsdom): every export in both directions
+npm run build        # dist/*.d.ts
+node .github/audit-gate.mjs   # the dependency gate
+npm pack --dry-run   # what the tarball would contain
+```
+
+A new helper goes in its own module under `src/`, is re-exported from `src/index.ts`, and comes with a test for the allowed form and the refused
+one. The rules for changing a helper are in [`CLAUDE.md`](CLAUDE.md); how to propose a change is in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Open standards
 

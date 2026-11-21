@@ -6,12 +6,19 @@
  * nested `cause` fields, and arbitrary fallback via String().
  */
 export function errorMessage(e: unknown): string {
+  // The recursion lives in `messageOf`, which counts how deep it has followed `cause`.
   return messageOf(e, 0)
 }
 
 /** How many `cause` links are followed: a wallet extension can throw an object whose cause is itself. */
 const MAX_CAUSE_DEPTH = 8
 
+/**
+ * The message of a thrown value, following `cause` up to {@link MAX_CAUSE_DEPTH} links.
+ * @param e - the thrown value
+ * @param depth - how many `cause` links have been followed so far
+ * @returns the first non-empty message found, else the value as a string
+ */
 function messageOf(e: unknown, depth: number): string {
   if (typeof e === 'string') return e
   if (e instanceof Error) {
@@ -19,6 +26,7 @@ function messageOf(e: unknown, depth: number): string {
     if (!e.message && e.cause != null && depth < MAX_CAUSE_DEPTH) return messageOf(e.cause, depth + 1)
     return e.message || e.toString()
   }
+  // A plain object, which is what some wallet extensions throw (`{ code: 4001, message }`).
   if (typeof e === 'object' && e !== null) {
     const obj = e as Record<string, unknown>
     if (typeof obj.message === 'string' && obj.message) return obj.message

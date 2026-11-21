@@ -1,7 +1,12 @@
+/**
+ * Tests for the time helpers (`src/time.ts`): converting a wall time in a zone to a UTC instant either side of a clock change (including the
+ * hour that does not exist and the hour that happens twice), the readable date forms, the empty-value text, and the cached formatters.
+ */
 import { describe, expect, it } from 'vitest'
 import { browserZone, dayKey, formatClock, formatDate, formatDateTime, formatWindow, fromLocalInput, isZone, offsetMinutes, toLocalInput } from '../src/time.js'
 
 describe('time zones', () => {
+  // A `datetime-local` input carries a wall time with no zone, so the conversion must use the chosen zone's offset at that date, not today's.
   it('converts a wall time in a zone to the right UTC instant, either side of a clock change', () => {
     expect(fromLocalInput('2026-07-01T09:30', 'Europe/London')).toBe('2026-07-01T08:30:00.000Z') // BST
     expect(fromLocalInput('2026-12-01T09:30', 'Europe/London')).toBe('2026-12-01T09:30:00.000Z') // GMT
@@ -18,6 +23,7 @@ describe('time zones', () => {
     expect(fromLocalInput('2026-10-25T01:30', 'Europe/London')).toBe('2026-10-25T00:30:00.000Z')
   })
 
+  // toLocalInput then fromLocalInput must give the same instant in every zone and season, or an edited time would drift on save.
   it('round-trips and rejects nonsense', () => {
     for (const tz of ['UTC', 'Europe/London', 'America/Los_Angeles', 'Australia/Sydney']) {
       for (const iso of ['2026-01-15T10:00:00.000Z', '2026-06-15T10:00:00.000Z']) {
@@ -67,6 +73,7 @@ describe('dates for people', () => {
     expect(formatClock('2026-07-01T23:05:00Z', { tz: 'UTC' })).toBe('23:05')
   })
 
+  // Formatters are built once per zone; a cache keyed wrongly would show one zone's time in another.
   it('caches formatters per zone, so the same instant formats the same twice', () => {
     const a = formatDateTime('2026-07-01T08:30:00Z', { tz: 'America/New_York' })
     expect(formatDateTime('2026-07-01T08:30:00Z', { tz: 'America/New_York' })).toBe(a)

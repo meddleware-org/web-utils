@@ -1,9 +1,14 @@
+/**
+ * Tests for the small helpers with no module of their own to test: the input guards (`src/guards.ts`), `humanize` (`src/text.ts`), the safe
+ * download name and `triggerDownload` (`src/download.ts`), and `safeStorage` (`src/storage.ts`).
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { isObj, str } from '../src/guards.js'
 import { humanize } from '../src/text.js'
 import { safeFileName, triggerDownload } from '../src/download.js'
 import { safeStorage } from '../src/storage.js'
 
+// The guards decide whether data from storage or a response may be trusted at all, so the odd inputs (null, arrays) are the point.
 describe('guards', () => {
   it('isObj accepts plain objects only', () => {
     expect(isObj({})).toBe(true)
@@ -24,6 +29,7 @@ describe('humanize', () => {
   })
 })
 
+// A file name comes from a label a person typed or a server sent; path separators and leading dots must never survive into a download.
 describe('safeFileName', () => {
   it('keeps word characters, dots and dashes; strips the rest and leading dots', () => {
     expect(safeFileName('my file (1).txt', 'x')).toBe('my_file__1_.txt')
@@ -35,6 +41,7 @@ describe('safeFileName', () => {
   })
 })
 
+// The object URL must outlive the click: revoking it at once cancels the download in some browsers, so the test uses fake timers.
 describe('triggerDownload', () => {
   it('clicks a download link with the name, then releases the object URL later, not at once', () => {
     vi.useFakeTimers()
@@ -53,8 +60,10 @@ describe('triggerDownload', () => {
   })
 })
 
+// Storage can be missing (a server render) or even throw on access (a blocked-site-data browser); both must read as "no storage".
 describe('safeStorage', () => {
   it('is null where there is no storage (a server render)', () => {
+    // A server render has neither global; stubbing them undefined reproduces that without leaving Node.
     vi.stubGlobal('localStorage', undefined)
     vi.stubGlobal('sessionStorage', undefined)
     expect(safeStorage()).toBeNull()
@@ -67,6 +76,7 @@ describe('safeStorage', () => {
     vi.stubGlobal('localStorage', fake)
     expect(safeStorage()).toBe(fake)
     vi.unstubAllGlobals()
+    // Browsers with site data blocked throw a SecurityError on the property read itself, not only on use.
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, get: () => { throw new Error('SecurityError') } })
     try {
       expect(safeStorage()).toBeNull()

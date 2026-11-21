@@ -1,5 +1,13 @@
 // @meddleware/web-utils — framework-free helpers shared by the Meddleware frontends. No Vue, no DOM at import time, no side effects.
+//
+// This file only re-exports: one module per concern, so a consumer (or a bundler) can tell what it uses. The groups below are exact money
+// (`fixed`, `coin`, `usd`), time (`time`, `calendar`), failure and race handling (`errors`, `async`, `fetch`), untrusted input (`storage`,
+// `guards`, `safe-href`, `status`), display (`text`, `truncate`, `explorer`, `download`) and the network status the pages share
+// (`network-status`). The URL helpers `safeHref`, `safePath`, `safeIcon`, `suiExplorerUrl` and `walruscanBlobUrl` are named in
+// `@meddleware/eslint-config`'s `URL_HELPERS`: renaming one breaks every app's lint (CLAUDE.md, "Names are load-bearing").
+// Every export is proven by a test in tests/.
 
+// Exact money: bigint digits, never floating point.
 export { parseFixed, formatFixed } from './fixed.js'
 export type { FormatFixedOptions } from './fixed.js'
 export { COIN_DECIMALS, MIST_PER_SUI, suiToMist, mistToSui, formatCoinAmount, formatCoinExact } from './coin.js'

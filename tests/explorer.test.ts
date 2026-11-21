@@ -1,5 +1,9 @@
+/**
+ * Tests for the explorer link builders (`src/explorer.ts`): the right origin per network, and every chain-supplied id kept to one path
+ * segment so it cannot rewrite the link. These names are also trusted by `@meddleware/eslint-config` in template bindings.
+ */
 import { describe, it, expect } from 'vitest'
-import { suiExplorerUrl } from '../src/explorer.js'
+import { suiExplorerUrl, walruscanBlobUrl } from '../src/explorer.js'
 
 describe('suiExplorerUrl', () => {
   it('builds testnet SuiVision URLs per kind', () => {
@@ -18,6 +22,7 @@ describe('suiExplorerUrl', () => {
 })
 
 describe('suiExplorerUrl encoding', () => {
+  // An id comes from the chain, so `../txblock/x?y=1#z` must stay one harmless segment, not become a different path, query or fragment.
   it('keeps a chain-supplied id to one path segment', () => {
     expect(suiExplorerUrl('object', '../txblock/x?y=1#z', 'testnet')).toBe(
       'https://testnet.suivision.xyz/object/..%2Ftxblock%2Fx%3Fy%3D1%23z',
@@ -26,8 +31,7 @@ describe('suiExplorerUrl encoding', () => {
 })
 
 describe('walruscanBlobUrl', () => {
-  it('links a blob on its network, encoding the id as one path segment', async () => {
-    const { walruscanBlobUrl } = await import('../src/explorer.js')
+  it('links a blob on its network, encoding the id as one path segment', () => {
     expect(walruscanBlobUrl('testnet', 'AbC-_123')).toBe('https://walruscan.com/testnet/blob/AbC-_123')
     expect(walruscanBlobUrl('mainnet', '../evil?x=1')).toBe('https://walruscan.com/mainnet/blob/..%2Fevil%3Fx%3D1')
   })

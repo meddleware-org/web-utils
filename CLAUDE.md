@@ -35,6 +35,20 @@ Bump `version`, push, tag `v<version>`; `npm-publish.yml` publishes with npm tru
 lint, tests, build, package contents) and the `node24-compat` floor job pass. Consumers pin `^0.0.x`, an exact pin on 0.0.x, so
 bump them together.
 
+## Commands
+
+```bash
+npm ci && npm run type-check && npm run lint && npm test   # what CI checks, short of the build and the tarball check
+npm run build && npm pack --dry-run                        # dist/*.d.ts and the tarball's file list
+node .github/audit-gate.mjs                                # the dependency gate (an exact copy of design-tokens' file, FU-0196)
+```
+
+## Related
+
+- The audit: [`docs/audit/web-utils-audit.md`](docs/audit/web-utils-audit.md).
+- Consumers: fifteen repositories take `^0.0.x` (the frontends, `ui`, `wallet-adapter`, `walrus-storage-kit`, `dev-site`); release the apps after this package.
+- How to propose a change: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Interoperability
 
 - [docs/INTEROP.md](docs/INTEROP.md): the standards this project speaks, what is planned, where to extend it, and what proves each claim.

@@ -1,11 +1,14 @@
 /** `in_progress` → `in progress`: every underscore, not only the first. */
 export const humanize = (snake: string): string => snake.replace(/_/g, ' ')
 
+/** The units above a plain byte, smallest first. Binary (1024) units are named KiB, MiB…, never KB, which would mean 1000. */
 const BYTE_UNITS = ['KiB', 'MiB', 'GiB', 'TiB'] as const
 
 /**
  * A byte count for people, in binary units: `512 B`, `12.3 KiB`, `4.0 MiB`. One decimal above a kibibyte, whole bytes below it; a
  * negative or non-finite count is shown as `—` rather than a made-up number.
+ * @param bytes - the count
+ * @returns the text to show
  */
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—'

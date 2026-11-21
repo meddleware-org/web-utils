@@ -1,13 +1,19 @@
+// TypeScript settings for type-checking (`npm run type-check`) over the source and the tests; nothing is emitted (tsconfig.build.json does
+// that for the declarations). The library runs in Node, a worker and a browser, so the DOM types are included but no framework's.
 {
   "compilerOptions": {
+    // Node 26 and current browsers run the source as written, so no down-levelling is needed.
     "target": "esnext",
+    // `DOM` for the helpers that take a `Document`, `Storage` or `Response`; the code never touches them at import time (CLAUDE.md).
     "lib": ["esnext", "DOM"],
     "types": ["node"],
     "module": "esnext",
     "moduleResolution": "Bundler",
     "strict": true,
+    // An index access can be undefined: the code handles it (`m[1] ?? ''`) rather than assuming the data is well formed.
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
+    // Do not type-check the dependencies' own declaration files: their correctness is not this package's to prove.
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true

@@ -1,3 +1,7 @@
+/**
+ * Tests for the exact fixed-point helpers (`src/fixed.ts`): decimals to bigint base units and back, with values beyond 2^53, rounding half
+ * away from zero on the exact digits, and a parse-then-format round trip. Money goes through these, never through floating point.
+ */
 import { describe, expect, it } from 'vitest'
 import { formatFixed, parseFixed } from '../src/fixed.js'
 
@@ -29,6 +33,7 @@ describe('formatFixed', () => {
     expect(formatFixed(0n, 6, { minFraction: 2 })).toBe('0.00')
     expect(formatFixed(1_234_567_890n, 6, { minFraction: 2, group: 'en-GB' })).toBe('1,234.56789')
     expect(formatFixed(-1_500_000n, 6)).toBe('-1.5')
+    // A value that rounds to nothing must not print as "-0".
     expect(formatFixed(-1n, 6, { maxFraction: 2 })).toBe('0') // rounds to nothing, so no minus sign
   })
 

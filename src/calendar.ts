@@ -1,19 +1,29 @@
 // A month grid: weeks starting on Monday, each day keyed `YYYY-MM-DD`.
 
+/** One day in a month grid. */
 export interface Cell {
   /** `YYYY-MM-DD`. */
   day: string
   /** Day of the month. */
   date: number
+  /** Whether the day belongs to the month the grid was built for (false for the leading and trailing days of the neighbours). */
   inMonth: boolean
 }
 
+/** A number as two digits, for the date keys. */
 const pad = (n: number) => String(n).padStart(2, '0')
+/** A date's UTC calendar day as `YYYY-MM-DD` (everything here is UTC so the grid is the same in every time zone). */
 const key = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`
 
-/** Weeks (Monday first) covering a month. `month` is 1 to 12. */
+/**
+ * Weeks (Monday first) covering a month: four to six rows of seven days.
+ * @param year - the year
+ * @param month - the month, 1 to 12
+ * @returns the weeks, each a row of seven {@link Cell}s
+ */
 export function monthGrid(year: number, month: number): Cell[][] {
   const first = new Date(Date.UTC(year, month - 1, 1))
+  // getUTCDay() counts Sunday as 0; shifting by 6 (mod 7) makes Monday 0, so `lead` is how many days of the previous month come first.
   const lead = (first.getUTCDay() + 6) % 7
   const start = new Date(Date.UTC(year, month - 1, 1 - lead))
   const weeks: Cell[][] = []
@@ -23,12 +33,20 @@ export function monthGrid(year: number, month: number): Cell[][] {
       const cur = new Date(start.getTime() + (w * 7 + d) * 86_400_000)
       week.push({ day: key(cur), date: cur.getUTCDate(), inMonth: cur.getUTCMonth() === month - 1 })
     }
+    // A month needs at least four weeks; after that a row with no day of the month in it is not drawn.
     if (w >= 4 && week.every((x) => !x.inMonth)) break
     weeks.push(week)
   }
   return weeks
 }
 
+/**
+ * A month moved by some months, carrying into the year (`shiftMonth(2026, 12, 1)` is January 2027).
+ * @param year - the year
+ * @param month - the month, 1 to 12
+ * @param by - how many months to move; negative goes back
+ * @returns the resulting year and month (1 to 12)
+ */
 export const shiftMonth = (year: number, month: number, by: number): { year: number; month: number } => {
   const d = new Date(Date.UTC(year, month - 1 + by, 1))
   return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 }
@@ -47,5 +65,7 @@ export const monthNames = (locale = 'en-GB'): string[] => names({ month: 'long' 
 export const weekdayNames = (locale = 'en-GB', style: 'long' | 'short' = 'long'): string[] =>
   names({ weekday: style }, 7, (i) => Date.UTC(2024, 0, 1 + i), locale) // 1 Jan 2024 is a Monday
 
+/** The English (en-GB) month names, computed once for the many callers that need the default list. */
 export const MONTHS = monthNames()
+/** The English (en-GB) weekday names, Monday first, computed once. */
 export const WEEKDAYS = weekdayNames()

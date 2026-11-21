@@ -1,3 +1,7 @@
+/**
+ * Tests for the SUI and WAL amount helpers (`src/coin.ts`): exact conversion in both directions (never through floating point, which once
+ * rounded 5e-10 SUI up to 1 MIST), the display forms, and amounts above 2^53 where a float would drift.
+ */
 import { describe, expect, it } from 'vitest'
 import { formatCoinAmount, formatCoinExact, mistToSui, suiToMist } from '../src/coin.js'
 
@@ -10,6 +14,7 @@ describe('suiToMist / mistToSui', () => {
     expect(suiToMist('12.000000001')).toBe(12_000_000_001n)
   })
 
+  // Vue's v-model turns a number input into a JavaScript number, whose string form switches to an exponent for very small and large values.
   it('accepts numbers from a type="number" v-model, including exponent-sized values', () => {
     expect(suiToMist(0.0000005)).toBe(500n) // String(0.0000005) === '5e-7'
     expect(suiToMist(2.5)).toBe(2_500_000_000n)
@@ -46,6 +51,7 @@ describe('formatCoinAmount', () => {
     expect(formatCoinAmount(1_000_000_000_000n, 'SUI')).toBe('1000.0000 SUI')
   })
 
+  // Rounding a real tip to "0.0000" would show a payment as free, so tiny amounts keep every significant digit.
   it('shows a tiny nonzero amount truthfully instead of rounding to 0.0000', () => {
     // 10_000 MIST = 0.00001 SUI — the real relay tip base that was displaying as "0.0000".
     expect(formatCoinAmount(10_000n, 'SUI')).toBe('0.00001 SUI')

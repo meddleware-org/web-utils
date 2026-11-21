@@ -1,3 +1,7 @@
+/**
+ * Tests for `networkAvailability` (`src/network-status.ts`): mainnet is "coming" until every product's record has a mainnet key, "partial"
+ * while some do, and "live" only when all do, so no page can claim a network the records do not have.
+ */
 import { describe, expect, it } from 'vitest'
 import { networkAvailability } from '../src/index.js'
 

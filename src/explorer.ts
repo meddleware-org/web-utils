@@ -27,11 +27,17 @@ const SUIVISION_ORIGIN: Record<SuiNetwork, string> = {
  * @returns The full SuiVision URL, e.g. `https://testnet.suivision.xyz/account/0x…`.
  */
 export function suiExplorerUrl(kind: SuiExplorerKind, id: string, network: SuiNetwork = 'testnet'): string {
+  // An unknown network (a value that came from outside the type system) falls back to testnet rather than building a broken link.
   const origin = SUIVISION_ORIGIN[network] ?? SUIVISION_ORIGIN.testnet
   return `${origin}/${kind}/${encodeURIComponent(id)}`
 }
 
-/** A Walrus blob on Walruscan, the Walrus-native explorer (SuiVision handles Sui entities). */
+/**
+ * A Walrus blob on Walruscan, the Walrus-native explorer (SuiVision handles Sui entities).
+ * @param network - the Walrus network the blob is on
+ * @param blobId - the blob's id (base64url), encoded so it can only ever be one path segment
+ * @returns the full Walruscan URL
+ */
 export function walruscanBlobUrl(network: WalrusExplorerNetwork, blobId: string): string {
   return `https://walruscan.com/${encodeURIComponent(network)}/blob/${encodeURIComponent(blobId)}`
 }

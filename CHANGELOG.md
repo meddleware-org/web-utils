@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Documentation pass (line-level annotation): every source file, test, workflow and configuration file explains itself; a Development section
+  and a complete export table in the README (`networkAvailability`, the limits and the option types were missing); Commands and Related
+  sections in CLAUDE.md; CONTRIBUTING.md and AGENTS.md. No behaviour change.
+- Three tests import the function they test at the top of the file instead of with a dynamic `import()` inside the test.
+
 ## [0.0.4] - 2026-11-08
 
 ### Fixed

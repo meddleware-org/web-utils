@@ -1,11 +1,15 @@
+// Build settings (`npm run build`): emit dist/*.d.ts from the source, so TypeScript consumers get types for every export. Only declarations
+// are emitted: the package ships the TypeScript source itself (package.json `files`), like the client libraries.
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
     "emitDeclarationOnly": true,
+    // dist/ mirrors src/ (index.ts → index.d.ts).
     "rootDir": "./src",
     "declarationDir": "./dist"
   },
+  // The tests are type-checked but never emitted.
   "include": ["src/**/*.ts"]
 }

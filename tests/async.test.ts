@@ -1,3 +1,7 @@
+/**
+ * Tests for `createGeneration` (`src/async.ts`): the "latest call wins" guard that stops a slow, older result overwriting a newer one.
+ * The realistic-race case runs two real timers, so it fails if a stale result could ever be applied.
+ */
 import { describe, expect, it } from 'vitest'
 import { createGeneration } from '../src/async.js'
 
@@ -19,6 +23,7 @@ describe('createGeneration', () => {
     expect(g.begin()()).toBe(true)
   })
 
+  // The scenario the helper exists for: the first load is slower than the second, so it finishes last and must not win.
   it('drops a slow earlier result in a realistic race', async () => {
     const g = createGeneration()
     const applied: string[] = []

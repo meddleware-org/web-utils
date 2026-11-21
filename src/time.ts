@@ -2,10 +2,18 @@
 // person chose (default: the browser's). `datetime-local` inputs carry a wall time with no zone, so conversion in both
 // directions goes through the chosen zone with Intl only (no library). Formatters are built once per zone and cached.
 
+/** The one locale everything is written in (day-month-year, 24-hour clock, English month names). */
 const LOCALE = 'en-GB'
+/** The date part of every readable date: `29 Oct 2026`. */
 const day = { day: 'numeric', month: 'short', year: 'numeric' } as const
 
+/** Formatters for the numeric date parts, by zone (building an Intl formatter is slow, so each is built once). */
 const partsCache = new Map<string, Intl.DateTimeFormat>()
+/**
+ * The formatter that splits an instant into numeric year, month, day, hour, minute and second in a zone.
+ * @param tz - an IANA zone name (throws a RangeError when the runtime does not know it)
+ * @returns the cached formatter
+ */
 function parts(tz: string): Intl.DateTimeFormat {
   let f = partsCache.get(tz)
   if (!f) {
@@ -24,11 +32,20 @@ function parts(tz: string): Intl.DateTimeFormat {
   return f
 }
 
+/** Formatter caches for the three readable forms, by zone. */
 const dateTimeCache = new Map<string, Intl.DateTimeFormat>()
 const dateCache = new Map<string, Intl.DateTimeFormat>()
 const clockCache = new Map<string, Intl.DateTimeFormat>()
+/** The cache key for "the runtime's own zone" (no zone given). */
 const BROWSER = ''
 
+/**
+ * A formatter from a cache, built on first use.
+ * @param cache - which form's cache
+ * @param tz - the zone, or `undefined` for the runtime's own
+ * @param options - the formatter's options
+ * @returns the formatter
+ */
 function cached(cache: Map<string, Intl.DateTimeFormat>, tz: string | undefined, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
   const key = tz ?? BROWSER
   let f = cache.get(key)
@@ -60,8 +77,10 @@ export const browserZone = (): string => {
 
 /** The zone's offset from UTC at an instant, in minutes (positive east of Greenwich). */
 export function offsetMinutes(ms: number, tz: string): number {
+  // Read the zone's wall-clock fields for this instant, then compare that wall time (as if it were UTC) with the instant itself.
   const p = Object.fromEntries(parts(tz).formatToParts(new Date(ms)).map((x) => [x.type, x.value]))
   const asUtc = Date.UTC(+p.year!, +p.month! - 1, +p.day!, +p.hour!, +p.minute!, +p.second!)
+  // The instant is floored to whole seconds because the wall time has no milliseconds.
   return Math.round((asUtc - Math.floor(ms / 1000) * 1000) / 60000)
 }
 
@@ -83,8 +102,11 @@ export function fromLocalInput(value: string, tz: string): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value.trim())
   if (!m) return null
   const [y, mo, d, h, mi] = m.slice(1).map(Number) as [number, number, number, number, number]
+  // The wall time read as if it were UTC; the zone's offset is then subtracted to get the real instant.
   const wall = Date.UTC(y, mo - 1, d, h, mi)
+  // `2026-02-31` would roll over to March: a month that changed means the date does not exist.
   if (Number.isNaN(wall) || new Date(wall).getUTCMonth() !== mo - 1) return null
+  // The offset a day before and a day after bracket any clock change near this wall time, so one of them is the offset in force.
   const oneDay = 24 * 3600 * 1000
   const before = offsetMinutes(wall - oneDay, tz)
   const after = offsetMinutes(wall + oneDay, tz)
@@ -99,6 +121,7 @@ export function dayKey(iso: string, tz: string): string {
   return toLocalInput(iso, tz).slice(0, 10)
 }
 
+/** Options for the readable-date formatters. */
 export interface FormatOptions {
   /** IANA zone to show the instant in; default the runtime's own. */
   tz?: string
@@ -106,6 +129,7 @@ export interface FormatOptions {
   empty?: string
 }
 
+/** A zone given as a bare string is shorthand for `{ tz }`. */
 const resolve = (o: string | FormatOptions | undefined): FormatOptions => (typeof o === 'string' ? { tz: o } : (o ?? {}))
 
 /** A readable date and time, naming the zone (`29 Oct 2026, 14:05 BST`). A string argument is the zone. */

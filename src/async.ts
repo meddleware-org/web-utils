@@ -21,7 +21,12 @@ export interface Generation {
   invalidate(): void
 }
 
+/**
+ * Create a {@link Generation}.
+ * @returns a counter whose tokens are current only until the next `begin()` or `invalidate()`
+ */
 export function createGeneration(): Generation {
+  // The latest number handed out; a token is current while it still equals this.
   let generation = 0
   return {
     begin() {
@@ -53,11 +58,14 @@ export interface OperationScope {
  * (a network switch, an account switch, a disconnect); the view invalidates the scope on each change, and an operation begun earlier
  * finds `isCurrent()` false after its next await and drops its result. Unlike {@link createGeneration}, beginning an operation does
  * not cancel others: only `invalidate()` does. Every `await` in an operation is followed by an `isCurrent()` check.
+ * @returns a new scope, with no tokens issued
  */
 export function createOperationScope(): OperationScope {
+  // Bumped by every `invalidate()`; a token remembers the value it was issued at and is current while that is still the value.
   let generation = 0
   return {
     begin() {
+      // Unlike createGeneration, begin() does not bump: starting one operation must not cancel the others in the same scope.
       const issued = generation
       return { isCurrent: () => issued === generation }
     },

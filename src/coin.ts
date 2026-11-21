@@ -1,7 +1,9 @@
 // SUI and WAL amounts. Both coins have 9 decimals: 1 SUI = 1_000_000_000 MIST, 1 WAL = 1_000_000_000 FROST.
 import { formatFixed, parseFixed } from './fixed.js'
 
+/** Decimal places of SUI and WAL: the base unit is a billionth of the coin. */
 export const COIN_DECIMALS = 9
+/** MIST in one SUI. */
 export const MIST_PER_SUI = 1_000_000_000n
 
 /**
@@ -9,6 +11,7 @@ export const MIST_PER_SUI = 1_000_000_000n
  * `type="number"` field), with an exponent form (`5e-7`, `1e+21`) written out. Never `toFixed`, which rounds digits away.
  */
 function plainDecimal(n: number): string {
+  // String(n) switches to an exponent for very small and very large numbers (`5e-7`, `1e+21`): split it into digits and a point position.
   const m = /^(\d+)(?:\.(\d+))?e([+-]\d+)$/.exec(String(n))
   if (!m) return String(n)
   const digits = (m[1] ?? '') + (m[2] ?? '')
@@ -28,6 +31,7 @@ export function suiToMist(sui: string | number): bigint {
     if (!Number.isFinite(sui) || sui < 0) throw new Error('Invalid price.')
     sui = plainDecimal(sui)
   }
+  // Checked before parsing so the message says what is wrong: parseFixed alone would only say "invalid".
   if (/^\s*\d*\.\d{10,}\s*$/.test(sui)) throw new Error('Price has more than 9 decimal places (1 MIST = 0.000000001 SUI).')
   const mist = parseFixed(sui, COIN_DECIMALS)
   if (mist === null) throw new Error('Invalid price.')

@@ -1,3 +1,7 @@
+/**
+ * Tests for `formatBytes` (`src/text.ts`): whole bytes below a kibibyte, one decimal in binary units above it, no unit beyond TiB, and a
+ * dash instead of an invented size for a negative or non-finite count.
+ */
 import { describe, expect, it } from 'vitest'
 import { formatBytes } from '../src/index.js'
 
