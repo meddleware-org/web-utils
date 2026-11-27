@@ -43,6 +43,10 @@ npm run build && npm pack --dry-run                        # dist/*.d.ts and the
 node .github/audit-gate.mjs                                # the dependency gate (an exact copy of design-tokens' file, FU-0196)
 ```
 
+## Documentation rules (workspace documentation standard, D144)
+
+Every file has a header and every declaration a TSDoc comment (private declarations included); comments say why. `node scripts/check-docs.mjs --report web-utils` (in the workspace repository) is the gate. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Related
 
 - The audit: [`docs/audit/web-utils-audit.md`](docs/audit/web-utils-audit.md).
