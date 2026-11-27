@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-27
+
 ### Changed
 - Documentation pass (line-level annotation): every source file, test, workflow and configuration file explains itself; a Development section
   and a complete export table in the README (`networkAvailability`, the limits and the option types were missing); Commands and Related
